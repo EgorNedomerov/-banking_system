@@ -177,7 +177,6 @@ client_1 = BankAccount ("14597345987", "Ivan", 'Ivanovich', 'Ivanov', 10000, "ac
 print (client_1)
 
 # создание замороженного счета
-
 client_2 = BankAccount ("458475", "Petr", "Petrovich", "Petrov", 100, "frozen", "RUB")
 print (client_2)
 
