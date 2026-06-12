@@ -9,9 +9,8 @@ class AbstractAccount (ABC):
     account_balance: float
     status: str
     max_limit: float
-    MAX_LIMIT = 1_000_000
     used_id = set()
-    def __init__(self,account_id,name,surname,lastname,account_balance,status, max_limit):
+    def __init__(self, account_id,name,surname,lastname,account_balance,status):
         
         if account_id in AbstractAccount.used_id:
             raise ValueError (f"ID {account_id} уже существует")
@@ -21,11 +20,6 @@ class AbstractAccount (ABC):
         self.surname = surname
         self.lastname = lastname
         self.account_balance = account_balance
-        
-        if max_limit is None:
-            max_limit = self.MAX_LIMIT
-        
-        self.max_limit = max_limit
         
         allowed_status = ['active', 'frozen', 'closed']
         
@@ -43,9 +37,23 @@ class AbstractAccount (ABC):
     @abstractmethod
     def get_account_info(self):
         pass
+    
+    @abstractmethod
+    def __str__(self):
+        pass
+
 class BankAccount (AbstractAccount):
-    def __init__(self, account_id, name, surname, lastname, account_balance, status, currency, max_limit = None):
-        super().__init__(account_id, name, surname, lastname, account_balance, status, max_limit) 
+    
+    MAX_LIMIT = 1_000_000
+    
+    def __init__(self, account_id, name, surname, lastname, account_balance, status, currency):
+        
+        #   проверка id счета и вызов метода генерации id
+
+        if account_id == "" or account_id is None:
+           account_id = self.generate_uuid ()
+        super().__init__(account_id, name, surname, lastname, account_balance, status) 
+        
         self.allowedcurrency = ['RUB','USD','EUR','KZT','CNY']
         self.currency = currency
 
@@ -56,16 +64,27 @@ class BankAccount (AbstractAccount):
         
         if not isinstance (surname, str):
             raise TypeError ("В поле фамилия введен некорректный формат данных") 
+        
         if not isinstance (lastname, str):
             raise TypeError ("В поле отчество введен некорректный формат данных") 
+        
         if not name and not surname and not lastname:
             raise ValueError ("Фамилия, имя, отчество обязательный для заполнения")
         
         if account_balance <0:
            raise ValueError (f"Сумма {account_balance} не может быть отрицательной") 
-       
-        if status != "active":
+        
+        # добавлена валидация валюты счета
+                                                                                    
+        if currency not in self.allowedcurrency:
+        
+            raise InvalidOperationError (f"Необходимо указать валюту для открытия счета. Список допустимых валют {self.allowedcurrency}")
+        
+    #   исправлена проверка статуса счета
+
+        if status == "closed":
             raise ValueError ("Операции со счетом невозможны")
+        
  
 #   метод пополнения баланса
  
@@ -86,8 +105,8 @@ class BankAccount (AbstractAccount):
         
      #   проверка максимального лимита   
         
-        if amount + self.account_balance > self.max_limit:
-            raise   InvalidOperationError (f"Ошибка. Сумма не может быть больше установленного лимита {self.max_limit}")
+        if amount + self.account_balance > self.MAX_LIMIT:
+            raise   InvalidOperationError (f"Ошибка. Сумма не может быть больше установленного лимита {self.MAX_LIMIT}")
         
     #   операция зачисления средств
      
@@ -113,7 +132,7 @@ class BankAccount (AbstractAccount):
 
         if self.status =="closed":
             raise AccountClosedError (f"Ошибка, счет {self.status}")
-        
+    
         if self.status == "frozen":
             raise AccountFrozenError (f"Ошибка, счет {self.status}")
    
@@ -130,11 +149,8 @@ class BankAccount (AbstractAccount):
 #   генерация уникального id 
 
     def generate_uuid (self):
-        
-        if self.account_id is None or self.account_id == "":
-
-            self.account_id = shortuuid.uuid()
-            print (f"Создан id счета {self.account_id}")
+            return shortuuid.uuid()
+            # print (f"Создан id счета '{self.account_id}'")
     
     def get_account_info(self):
         
@@ -155,8 +171,13 @@ class BankAccount (AbstractAccount):
             "balance": self.account_balance,
             "status": self.status,
             "currency": self.currency,
-            "max_limit": self.max_limit
+            "max_limit": self.MAX_LIMIT
             }
+        print (f"Номер счета: {account_info['account_id']}")
+        print (f"Владелец: {account_info['owner'] ['surname']} {account_info['owner']['name']} {account_info ['owner'] ['lastname']}")
+        print (f"Баланс счета: {account_info['balance']} {account_info ['currency']}")
+        print (f"Статус: {account_info['status']}")
+        print (f"Максимальный лимит: {account_info['max_limit']}")
         
         return account_info
 
@@ -173,30 +194,30 @@ class BankAccount (AbstractAccount):
 
 # создание счета 
 
-client_1 = BankAccount ("14597345987", "Ivan", 'Ivanovich', 'Ivanov', 10000, "active", "RUB")
-print (client_1)
+# client_1 = BankAccount ("", "Ivan", 'Ivanovich', 'Ivanov', 10000, "active", "RUB")
+# client_1.get_account_info()
 
 # создание замороженного счета
-client_2 = BankAccount ("458475", "Petr", "Petrovich", "Petrov", 100, "frozen", "RUB")
-print (client_2)
+# client_2 = BankAccount ("", "Petr", "Petrovich", "Petrov", 100, "frozen", "RUB")
+# print (client_2)
 
 # попытка пополнить замороженный счет
-client_2. deposit (500)
+# client_2. deposit (500)
 
 # валидация пополнения больше максимального лимита
-client_1. deposit (1_000_000)
+# client_1. deposit (1_000_000)
 
 # валидация снятия больше текущей суммы
-client_1.withdraw (10_000_000)
+# client_1.withdraw (10_000_000)
 
 # корректное попополнение счета 
-client_1.deposit (1000)
+# client_1.deposit (1000)
 
 # корректное снятие со счета
-client_1.withdraw (1000)
+# client_1.withdraw (1000)
 
-client_2.get_account_info ()
-info = client_2.get_account_info()
-print(info)
+# client_2.get_account_info ()
+# info = client_2.get_account_info()
+# print(info)
 
 
