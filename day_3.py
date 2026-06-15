@@ -198,7 +198,7 @@ class Bank:
 
         if client not in self.client:
             print (f"Клиент {client} не найден")
-            
+            return False
         
         if account_id not in client.account:
             print (f"Счет {account_id} не найден")
@@ -357,6 +357,13 @@ client2= Client (
     contact_number="+709134",
     birth_date=date(1998, 4, 15)
 )
+client3= Client (
+    name= "Petr",
+    surname= "Petrovich",
+    lastname= "Petrov",
+    contact_number="+709134",
+    birth_date=date(1998, 4, 15)
+)
 bank = Bank ("VTB") 
 bank.add_client (client1)
 bank.add_client (client2)
@@ -373,14 +380,14 @@ print(f"Баланс: {account2.account_balance} {account2.currency}")
 print(f"Владелец: {account2.surname} {account2.name}")
 print (client2.account)
 
-freeze = bank.freeze_account (client2,account2.account_id)
-
+# freeze = bank.freeze_account (client3,account1.account_id)
+unfreze = bank.unfreeze_account (client3,account1.account_id)
 
 # попытка входа 
-auth= bank.authenticate_client (client1, "pass1")
-auth= bank.authenticate_client (client1, "pass") 
+# auth= bank.authenticate_client (client1, "pass1")
+# auth= bank.authenticate_client (client1, "pass") 
 
-rank = bank.get_clients_ranking()
-total = bank.get_total_balance()
+# rank = bank.get_clients_ranking()
+# total = bank.get_total_balance()
 
 

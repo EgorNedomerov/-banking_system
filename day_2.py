@@ -446,7 +446,8 @@ class InvestmentAccount (BankAccount):
                 )
 
 # создание инвестиционного счета
-# client_1 = InvestmentAccount ("", "Ivan", 'Ivanovich', 'Ivanov', 5_000, "active", "RUB")
+client_1 = PremiumAccount ("", "Ivan", 'Ivanovich', 'Ivanov', 5_000, "active", "")
+print (client_1)
 # client_1.get_account_info ()
 # print (client_1)
 # info = client_1.get_account_info 
