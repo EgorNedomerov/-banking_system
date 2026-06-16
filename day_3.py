@@ -1,53 +1,60 @@
 from datetime import date, datetime
+from day_1 import BankAccount
+from day_2 import SavingsAccount, PremiumAccount, InvestmentAccount
+import shortuuid
+
 class Client:
+    
     ALLOWED_STATUS = ['active', 'frozen', 'closed']
 
-    def __init__(self, client_id, name, surname, lastname, contact_number, birth_date):
+    def __init__(self, name, surname, lastname,  contact_number, birth_date, client_id = None):
         
         #   валидация возраста
 
-            today = date.today ()
-            age = today.year - birth_date.year
+        today = date.today ()
+        age = today.year - birth_date.year
             
-            if (today.month, today.day) < (birth_date.month, birth_date.day):
+        if (today.month, today.day) < (birth_date.month, birth_date.day):
                 age -= 1
-            if age < 18:
-                 raise ValueError ("Невозможно создать аккаунт. Клиент должен быть старше 18 лет.")
+        if age < 18:
+             raise ValueError ("Невозможно создать аккаунт. Клиент должен быть старше 18 лет.")
             
-            self.name = name
-
-            self.surname = surname
-
-            self.lastname = lastname
-
+        if client_id is None:
+            self.client_id = self._generate_client_id ()
+        else:
             self.client_id = client_id
 
-            self.contact_number = contact_number
+        self.account = []
 
-            self.birth_date = birth_date
+        self.name = name
+
+        self.surname = surname
+
+        self.lastname = lastname
+
+        self.contact_number = contact_number
+
+        self.birth_date = birth_date
             
-            self.status = "active"
+        self.status = "active"
             
-            self.failed_attempts = 0
+        self.failed_attempts = 0
 
-            self. is_blocked = False
+        self. is_blocked = False
 
-            self.suspicious_activities = []
+        self.suspicious_activities = []
+
+    def _generate_client_id(self):
+        return f"CL{shortuuid.uuid()[:4].upper()}"    
 
 class Bank:
     
     def __init__(self, name):
         
         self.name = name
-        self.client= {}
-        self.account= {}
+        self.client= []
+        self.account= []
         self.account_counter = 0
-    
-    #  метод генерации номера счета
-
-    def generate_account_number(self):
-        self.account_counter += 1
-        return self.account_counter
     
     def add_client (self, client):
 
@@ -55,163 +62,179 @@ class Bank:
         if 0 <= now.hour < 5:
             raise ValueError (f"Операция запрещена. Добавление клиента невозможно с 00:00 до 05:00")
         
-        if client.client_id in self.client:
-            print(f"Клиент с ID {client.client_id} уже существует")
-            return False
+        for existing_client in self.client:
+            if existing_client.client_id == client.client_id:
+                print(f"Клиент с ID {client.client_id} уже существует")
+                return False
         
-        self.client[client.client_id] = client
+        self.client.append(client)
 
         print(f"Клиент {client.surname} {client.name} (ID: {client.client_id}) добавлен")
 
 #   метод создания аккаунта
 
-    def open_account(self, client, currency = "RUB", account_type = "standart"):
-         
-        if client.client_id not in self.client:
-            raise ValueError ("Клиент не найден")  
-        
-        if self.client[client.client_id] is not client:
-            raise ValueError("Клиент не зарегистрирован в банке")
+    def open_account (self, client, currency, account_type = "standart", opening_balance = 0):
 
-        if client.status!= "active":
-              raise ValueError ("У клиента нет активного аккаунта")
+        if client not in self.client:
+            print (f"Клиента {client.name} {client.surname} не зарегистрирован в банке")
+            return None
         
-        now = datetime.now()
-        if 0 <= now.hour < 5:
-            raise ValueError (f"Операция запрещена. Создание счета невозможно с 00:00 до 05:00")
-        
-        account_number = self.generate_account_number ()
-        
-        status = "active"
-        
-        account_info ={
-             "account_number": account_number,
-             "client_id": client.client_id,
-             "status": status,
-             "currency": "RUB",
-             "account_type": account_type,
-             "balance": 0.0
-        }
-        
-        self.account[account_number] = account_info
+        if account_type == "savings":
+            new_account = SavingsAccount(
+            account_id= None,
+            name = client.name,
+            surname= client.surname,
+            lastname= client.lastname,
+            account_balance= opening_balance,
+            status = "active",
+            currency = currency
+            )   
 
-        print (f"Создан счет {account_number}. Клиент {client.name} {client.surname}")
-        return account_number
+        elif account_type == "premium":
+            new_account = PremiumAccount(
+            account_id= None,
+            name = client.name,
+            surname= client.surname,
+            lastname= client.lastname,
+            account_balance= opening_balance,
+            status = "active",
+            currency = currency   
+            )
+
+        elif account_type == "investment":
+            new_account = InvestmentAccount(
+            account_id= None,
+            name = client.name,
+            surname= client.surname,
+            lastname= client.lastname,
+            account_balance= opening_balance,
+            status = "active",
+            currency = currency   
+            )
+        else:
+            new_account = BankAccount (
+            account_id= None,
+            name = client.name,
+            surname= client.surname,
+            lastname= client.lastname,
+            account_balance= opening_balance,
+            status = "active",
+            currency= currency
+        )
+        self.account.append(new_account)
+        client.account.append (new_account.account_id)
+        return new_account
 
 #   метод закрытия аккаунта   
 
-    def close_account (self, client_id, account_number):
+    def close_account (self, client, account_id):
         
         now = datetime.now()
-        if 0 <= now.hour < 5:
+        if 4 <= now.hour < 5:
             raise ValueError (f"Операция запрещена. Закрыть счет невозможно с 00:00 до 05:00")
         
-        if client_id not in self.client:
-            print(f"Клиент {client_id} не найден")
-            return False
-            
-        client = self.client[client_id]
-
-        if account_number not in self.account:
-            print (f"Счет {account_number} не найден")
-            return False
-        
-        account = self.account [account_number]
-        
-        if account["client_id"] != client_id:
-            print(f"Счет {account_number} не принадлежит клиенту")
+        if client not in self.client:
+            print (f"Клиент {client.name} {client.surname} не зарегистрирован в банке")
             return False
 
-
-        if account["status"] == "closed":
-            print(f"Счет {account_number} уже закрыт")
+        if account_id not in client.account:
+            print (f"Счет {account_id} не найден")
+            return False
+        Obj_account = None
+        for acc in self.account:
+            if acc.account_id == account_id:
+                Obj_account = acc
+                break
+        
+        if Obj_account is None:
+            print (f"Счет не найден")
             return False
         
-        account["status"] = "closed"
-        print(f"Счет {account_number} закрыт. Клиент {client.name} {client.surname}")
+        if Obj_account.status == "closed":
+            print (f"Счет {account_id} закрыт")
+            return False
+        
+        Obj_account.status = "closed"
+        print (f"Счет {account_id} закрыт")
         return True
-
+    
 #   метод заморозки акканута
   
-    def freeze_account (self, client_id, account_number):
+    def freeze_account (self, client, account_id):
         
-
-        if client_id not in self.client:
-            print (f"Клиент {client_id} не найден")
+        if client not in self.client:
+            print (f"Клиент {client.name} {client.surname} не зарегистрирован в банке")
+            return False
             
-        client = self.client[client_id]
         
-        if account_number not in self.account:
-            print (f"Счет {account_number} не найден")
+        if account_id not in client.account:
+            print (f"Счет {account_id} не найден")
+            return False
+        Obj_account = None
+        for acc in self.account:
+            if acc.account_id == account_id:
+                Obj_account = acc
+                break
+        
+        if Obj_account is None:
+            print (f"Счет не найден")
             return False
         
-        account = self.account [account_number]
-
-        if account["client_id"] != client_id:
-            print (f"Счет {account_number} не принадлежит клиенту")
+        if Obj_account.status == "closed":
+            print (f"Счет {account_id} закрыт")
             return False
         
-        if account ["status"] == "closed":
-            print (f"Счет {account_number} уже закрыт")
-            return False
-        
-        if account ["status"] == "frozen":
-            print (f"Счет {account_number} уже заморожен")
-            return False
-        
-        account ["status"] = "frozen"
-        print (f"Счет {account_number} заморожен. Клиент {client.name} {client.surname}")
+        Obj_account.status = "frozen"
+        print (f"Счет {account_id} заморожен")
         return True
     
 #   метод разморозки аккаунта 
 
-    def unfreeze_account (self, client_id, account_number):
+    def unfreeze_account (self, client, account_id):
         
         now = datetime.now()
         if 0 <= now.hour < 5:
             raise ValueError (f"Операция запрещена. Разблокировать Счет невозможно с 00:00 до 05:00")
 
-        if client_id not in self.client:
-            print (f"Клиент {client_id} не найден")
-            
-        client = self.client[client_id]
-        
-        if account_number not in self.account:
-            print (f"Счет {account_number} не найден")
+        if client not in self.client:
+            print (f"Клиент {client} не найден")
             return False
         
-        account = self.account [account_number]
+        if account_id not in client.account:
+            print (f"Счет {account_id} не найден")
+            return False
+    
+        Obj_account = None
+        for acc in self.account:
+            if acc.account_id == account_id:
+                Obj_account = acc
+                break
         
-        if account["client_id"] != client_id:
-            print (f"Счет {account_number} не принадлежит клиенту")
+        if Obj_account is None:
+            print (f"Счет не найден")
             return False
         
-        if account ["status"] == "closed":
-            print ("Ошибка. Счет закрыт")
+        if Obj_account.status == "closed":
+            print (f"Счет {account_id} закрыт")
             return False
-
-        if account ["status"] != "frozen":
-            print (f"Счет не заморожен. Актуальный статус: {account["status"]}")
-            return False        
-        account ["status"] = "active"
-        print (f"Счет {account_number} разморожен. Клиент {client.name} {client.surname}")
+        
+        Obj_account.status = "frozen"
+        print (f"Счет {account_id} разморожен")
         return True
     
-    def authenticate_client (self, client_id, password):
+    def authenticate_client (self, client, password):
         
-        if client_id not in self.client:
-            print(f"Клиент с ID {client_id} не найден")
+        if client not in self.client:
+            print(f"Клиент с ID {client.client_id} не найден")
             return None
-        
-        client = self.client[client_id]
         
         if client.status != "active":
             print(f"Клиент {client.name} {client.surname} не активен. Статус: {client.status}")
             return None
         
-        if password == f"pass_{client_id}": 
+        if password == f"pass": # не делал автоматическую генерацию, чтобы удобно было проверять
             client.failed_attempts = 0 
-            print(f"Клиент {client.name} {client.surname} (ID: {client_id}) успешно аутентифицирован")
+            print(f"Клиент {client.name} {client.surname} (ID: {client.client_id}) успешно аутентифицирован")
             return client
 
         else:
@@ -276,66 +299,95 @@ class Bank:
         
         total = 0.0 
         active_account_count = 0
-        for account_info in self.account.values():
+        for account in self.account:
         
-            if account_info["status"] != "closed":
-                total += account_info.get("balance", 0)
+            if account.status != "closed":
+                total += account.account_balance
                 active_account_count += 1   
-        print (f"Общий баланс банка {self.name}")
+        print (f"\nОбщий баланс банка {self.name}")
         print (f"Всего активных счетов {active_account_count}")
         print (f"Общая сумма средств {total}")
 
+        return total
+    
     def get_clients_ranking (self):
         
-        client_balance = {}
+        client_balance = []
         
-        for account_info in self.account.values():
-            client_id = account_info["client_id"]
-            balance = account_info.get("balance", 0)
-
-            if account_info ["status"] != "closed":
-                if client_id in client_balance:
-                    client_balance [client_id] += balance
-                else:
-                    client_balance [client_id] = balance
-
-        for client_id in self.client.keys():
-            if client_id not in client_balance:
-                client_balance [client_id] = 0.0
-
-        sorted_clients = sorted (client_balance.items(), key=lambda x: x[1], reverse=True)
-
-        for position, (client_id, balance) in enumerate(sorted_clients, 1):
-            client = self.client.get(client_id)
+        for client in self.client:
+            total_balance = 0.0
             
-            if client:
-                client_name = f"{client.name} {client.surname}"
-
-                print(f"{position}. ID: {client_id} | {client_name} | Баланс: {balance:.2f} ₽")
-            else:
-                print(f"{position}. ID: {client_id} | Баланс: {balance:.2f} ₽")
-
-        return [client_id for client_id in sorted_clients]
+            for account in self.account:
+                if (account.surname == client.surname and 
+                    account.name == client.name and 
+                    account.lastname == client.lastname and
+                    account.status != "closed"):
+                    total_balance += account.account_balance
+        
+            client_balance.append ((client, total_balance))
+        sorted_clients = sorted(client_balance, key=lambda x: x[1], reverse=True)
+        
+        print(f"\nРейтинг клиентов банка {self.name}")
+        
+        for position, (client, balance) in enumerate(sorted_clients, 1):
+            print(f"{position}. {client.surname} {client.name} (ID: {client.client_id}) | Баланс: {balance:.2f}")
+    
+    
+        result = []
+        for client, balance in sorted_clients:
+            result.append(client.client_id)
+    
+        return result
+                
     
 
-client1 = Client ("1", "Ivan", "Ivanov", "Ivanovich", "+709134", date(1998 , 4, 15))
-client2 = Client ("2", "Petr", "Petrov", "Petrovich", "+709134", date(2000 , 8, 17))
+client1= Client (
+    name= "Ivan",
+    surname= "Ivanovich",
+    lastname= "Ivanov",
+    contact_number="+709134",
+    birth_date= date(1998, 4, 15)
+    
+)
+
+client2= Client (
+    name= "Petr",
+    surname= "Petrovich",
+    lastname= "Petrov",
+    contact_number="+709134",
+    birth_date=date(1998, 4, 15)
+)
+client3= Client (
+    name= "Petr",
+    surname= "Petrovich",
+    lastname= "Petrov",
+    contact_number="+709134",
+    birth_date=date(1998, 4, 15)
+)
 bank = Bank ("VTB") 
-# создание клиентов
 bank.add_client (client1)
 bank.add_client (client2)
+account1 = bank.open_account(client1, currency="RUB", account_type="premium", opening_balance=1000)
+account2 = bank.open_account(client2, currency="USD", account_type="savings", opening_balance=100)
 
-# открытие счетов 
-bank.open_account(client1)
-bank.open_account(client2)
+print(f"\nСчёт: {account1.account_id[-4:]}")
+print(f"Баланс: {account1.account_balance} {account1.currency}")
+print(f"Владелец: {account1.surname} {account1.name}")
+print (client1.account)
+
+print(f"\nСчёт: {account2.account_id[-4:]}")
+print(f"Баланс: {account2.account_balance} {account2.currency}")
+print(f"Владелец: {account2.surname} {account2.name}")
+print (client2.account)
+
+# freeze = bank.freeze_account (client3,account1.account_id)
+unfreze = bank.unfreeze_account (client3,account1.account_id)
 
 # попытка входа 
-bank.authenticate_client (1, "pass_1")
-# заморозка счета
-bank.freeze_account (1, 1)
+# auth= bank.authenticate_client (client1, "pass1")
+# auth= bank.authenticate_client (client1, "pass") 
 
-# ac1 = bank.open_account(client1)
-# ac2 = bank.open_account(client2)
-# bank.account[ac1]["balance"] = 5000   
-# bank.account[ac2]["balance"] = 15000 
-# ranking = bank.get_clients_ranking()
+# rank = bank.get_clients_ranking()
+# total = bank.get_total_balance()
+
+
