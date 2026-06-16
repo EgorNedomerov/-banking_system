@@ -403,61 +403,61 @@ class TransactionProcessor:
         self.error_log.append(error_record)
          
 
-premium_sender_acc = PremiumAccount (None, "Ivan", "Ivanovich", "Ivanov", 50000, "active", "RUB")
-def_recipient_acc = BankAccount(None, "Petr", "Petrovich", "Petrov", 100000, "active", "RUB")
-recipient_acc = BankAccount (None, "Andrey", "Andreev", "Andreevich", 3000, "active", "RUB")
-transactions = [
-    Transaction("TX001", "internal", 5000, "RUB", premium_sender_acc, recipient_acc),
-    Transaction("TX002", "internal", 10000, "RUB", premium_sender_acc, def_recipient_acc),
-    Transaction("TX003", "internal", 3000, "RUB", premium_sender_acc, recipient_acc),
+# premium_sender_acc = PremiumAccount (None, "Ivan", "Ivanovich", "Ivanov", 50000, "active", "RUB")
+# def_recipient_acc = BankAccount(None, "Petr", "Petrovich", "Petrov", 100000, "active", "RUB")
+# recipient_acc = BankAccount (None, "Andrey", "Andreev", "Andreevich", 3000, "active", "RUB")
+# transactions = [
+#     Transaction("TX001", "internal", 5000, "RUB", premium_sender_acc, recipient_acc),
+#     Transaction("TX002", "internal", 10000, "RUB", premium_sender_acc, def_recipient_acc),
+#     Transaction("TX003", "internal", 3000, "RUB", premium_sender_acc, recipient_acc),
     
     
-    Transaction("TX004", "external", 15000, "RUB", premium_sender_acc, def_recipient_acc),
-    Transaction("TX005", "external", 7000, "RUB", premium_sender_acc, recipient_acc),
-    
-
-    Transaction("TX006", "internal", 15000, "RUB", premium_sender_acc, def_recipient_acc),
+#     Transaction("TX004", "external", 15000, "RUB", premium_sender_acc, def_recipient_acc),
+#     Transaction("TX005", "external", 7000, "RUB", premium_sender_acc, recipient_acc),
     
 
-    Transaction("TX007", "external", 50000, "RUB", premium_sender_acc, recipient_acc),
+#     Transaction("TX006", "internal", 15000, "RUB", premium_sender_acc, def_recipient_acc),
     
 
-    Transaction("TX008", "internal", 8000, "RUB", premium_sender_acc, def_recipient_acc),
-    Transaction("TX009", "internal", 4000, "RUB", premium_sender_acc, recipient_acc),
+#     Transaction("TX007", "external", 50000, "RUB", premium_sender_acc, recipient_acc),
+    
+
+#     Transaction("TX008", "internal", 8000, "RUB", premium_sender_acc, def_recipient_acc),
+#     Transaction("TX009", "internal", 4000, "RUB", premium_sender_acc, recipient_acc),
     
  
-    Transaction("TX010", "external", 300000, "RUB", premium_sender_acc, def_recipient_acc),
-]
+#     Transaction("TX010", "external", 300000, "RUB", premium_sender_acc, def_recipient_acc),
+# ]
 
-queue = TransactionQueue()
+# queue = TransactionQueue()
 
-queue.add_transaction(transactions[0], "high")
-queue.add_transaction(transactions[1], "high")
-queue.add_transaction(transactions[2], "medium")
-queue.add_transaction(transactions[3], "high")
-queue.add_transaction(transactions[4], "medium")
-queue.add_transaction(transactions[5], "medium")
-queue.add_transaction(transactions[6], "high")
-queue.add_transaction(transactions[7], "low")
-queue.add_transaction(transactions[8], "low")
-queue.add_transaction(transactions[9], "high")
+# queue.add_transaction(transactions[0], "high")
+# queue.add_transaction(transactions[1], "high")
+# queue.add_transaction(transactions[2], "medium")
+# queue.add_transaction(transactions[3], "high")
+# queue.add_transaction(transactions[4], "medium")
+# queue.add_transaction(transactions[5], "medium")
+# queue.add_transaction(transactions[6], "high")
+# queue.add_transaction(transactions[7], "low")
+# queue.add_transaction(transactions[8], "low")
+# queue.add_transaction(transactions[9], "high")
 
-processor = TransactionProcessor()
-tx = queue.get_next()
-while tx is not None:
-    print(f"\nОбработка: {tx.transaction_id}")
-    print(f"  Сумма: {tx.transaction_amount} {tx.currency}")
-    print(f"  Тип: {tx.type}")
-    print(f"  От: {tx.sender.name} {tx.sender.surname}")
-    print(f"  Кому: {tx.recipient.name} {tx.recipient.surname}")
+# processor = TransactionProcessor()
+# tx = queue.get_next()
+# while tx is not None:
+#     print(f"\nОбработка: {tx.transaction_id}")
+#     print(f"  Сумма: {tx.transaction_amount} {tx.currency}")
+#     print(f"  Тип: {tx.type}")
+#     print(f"  От: {tx.sender.name} {tx.sender.surname}")
+#     print(f"  Кому: {tx.recipient.name} {tx.recipient.surname}")
     
-    result = processor.process_transaction(tx)
+#     result = processor.process_transaction(tx)
     
-    if result:
-        print(f"  Результат: УСПЕШНО")
-    else:
-        print(f"  Результат: ОШИБКА - {tx.failure_reason}")
+#     if result:
+#         print(f"  Результат: УСПЕШНО")
+#     else:
+#         print(f"  Результат: ОШИБКА - {tx.failure_reason}")
     
-    tx = queue.get_next()
+#     tx = queue.get_next()
 
 

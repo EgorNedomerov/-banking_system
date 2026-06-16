@@ -1,0 +1,105 @@
+[
+  [
+    "2026-06-16 20:21:34",
+    "TX000",
+    "internal",
+    14,
+    "RUB",
+    "Ivanovich Ivan",
+    "Petrovich Petr",
+    "success",
+    "LOW",
+    1,
+    "",
+    0.3,
+    "medium",
+    [
+      "new_account"
+    ]
+  ],
+  [
+    "2026-06-16 20:21:34",
+    "TX001",
+    "internal",
+    30000,
+    "RUB",
+    "Ivanovich Ivan",
+    "Petrovich Petr",
+    "success",
+    "LOW",
+    1,
+    "",
+    0.0,
+    "low",
+    []
+  ],
+  [
+    "2026-06-16 20:21:34",
+    "TX002",
+    "external",
+    500000,
+    "RUB",
+    "Ivanovich Ivan",
+    "Petrovich Petr",
+    "success",
+    "LOW",
+    1,
+    "",
+    0.6000000000000001,
+    "medium",
+    [
+      "large_amount",
+      "external"
+    ]
+  ],
+  [
+    "2026-06-16 20:21:34",
+    "TX003",
+    "internal",
+    10,
+    "RUB",
+    "Ivanovich Ivan",
+    "Petrovich Petr",
+    "success",
+    "LOW",
+    1,
+    "",
+    0.0,
+    "low",
+    []
+  ],
+  [
+    "2026-06-16 20:21:34",
+    "TX004",
+    "internal",
+    10,
+    "RUB",
+    "Ivanovich Ivan",
+    "Petrovich Petr",
+    "success",
+    "LOW",
+    1,
+    "",
+    0.0,
+    "low",
+    []
+  ],
+  [
+    "2026-06-16 20:21:34",
+    "TX005",
+    "internal",
+    10,
+    "RUB",
+    "Ivanovich Ivan",
+    "Petrovich Petr",
+    "success",
+    "LOW",
+    1,
+    "",
+    0.4,
+    "medium",
+    [
+      "frequent_operations"
+    ]
+  ]
+]
