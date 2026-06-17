@@ -198,15 +198,7 @@ class BankAccount (AbstractAccount):
 # client_1.get_account_info()
 
 # создание замороженного счета
-<<<<<<< HEAD
-client_2 = BankAccount ("458475", "Petr", "Petrovich", "Petrov", 100, "frozen", "RUB")
-print (client_2)
-=======
-# client_2 = BankAccount ("", "Petr", "Petrovich", "Petrov", 100, "frozen", "RUB")
-# print (client_2)
->>>>>>> my-feature-branch
 
-# попытка пополнить замороженный счет
 # client_2. deposit (500)
 
 # валидация пополнения больше максимального лимита

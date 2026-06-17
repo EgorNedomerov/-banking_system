@@ -335,33 +335,33 @@ class AuditReports:
 
         return [total, success, failed, blocked, success_rate, error_reasons, error_counts]
 
-audit = AuditLog("my_audit.log")
+# audit = AuditLog("my_audit.log")
 
-risk_analyzer = RiskAnalyzer()
-processor = TransactionProcessor()
+# risk_analyzer = RiskAnalyzer()
+# processor = TransactionProcessor()
 
-sender1 = PremiumAccount (None, "Ivan", "Ivanovich", "Ivanov", 500000, "active", "RUB")
-recipient_premium = PremiumAccount (None, "Petr", "Petrovich", "Petrov", 100000, "active", "RUB")
+# sender1 = PremiumAccount (None, "Ivan", "Ivanovich", "Ivanov", 500000, "active", "RUB")
+# recipient_premium = PremiumAccount (None, "Petr", "Petrovich", "Petrov", 100000, "active", "RUB")
 
-tx = Transaction ("TX000", "internal", 14, "RUB", sender1,recipient_premium )
-tx1 = Transaction ("TX001", "internal", 30000, "RUB", sender1, recipient_premium)
-tx2 = Transaction ("TX002", "external", 500000, "RUB", sender1, recipient_premium)
-tx3 = Transaction ("TX003", "internal", 10, "RUB", sender1, recipient_premium)
-tx4 = Transaction ("TX004", "internal", 10, "RUB", sender1, recipient_premium)
-tx5 = Transaction ("TX005", "internal", 10, "RUB", sender1, recipient_premium)
+# tx = Transaction ("TX000", "internal", 14, "RUB", sender1,recipient_premium )
+# tx1 = Transaction ("TX001", "internal", 30000, "RUB", sender1, recipient_premium)
+# tx2 = Transaction ("TX002", "external", 500000, "RUB", sender1, recipient_premium)
+# tx3 = Transaction ("TX003", "internal", 10, "RUB", sender1, recipient_premium)
+# tx4 = Transaction ("TX004", "internal", 10, "RUB", sender1, recipient_premium)
+# tx5 = Transaction ("TX005", "internal", 10, "RUB", sender1, recipient_premium)
 
-result1 = risk_analyzer.blocked_transaction(tx,  sender1, processor, audit)
-result2 = risk_analyzer.blocked_transaction(tx1, sender1, processor, audit)
-result3 = risk_analyzer.blocked_transaction(tx2, sender1, processor, audit)
-result4 = risk_analyzer.blocked_transaction(tx3, sender1, processor, audit)
-result5 = risk_analyzer.blocked_transaction(tx4, sender1, processor, audit)
-result6 = risk_analyzer.blocked_transaction(tx5, sender1, processor, audit)
+# result1 = risk_analyzer.blocked_transaction(tx,  sender1, processor, audit)
+# result2 = risk_analyzer.blocked_transaction(tx1, sender1, processor, audit)
+# result3 = risk_analyzer.blocked_transaction(tx2, sender1, processor, audit)
+# result4 = risk_analyzer.blocked_transaction(tx3, sender1, processor, audit)
+# result5 = risk_analyzer.blocked_transaction(tx4, sender1, processor, audit)
+# result6 = risk_analyzer.blocked_transaction(tx5, sender1, processor, audit)
 
-# отчеты аудита
-reports = AuditReports(audit)
-suspicious = reports.report_suspicious() 
-clients_data = reports.report_client_risk()
-stats = reports.report_statistics()
+# # отчеты аудита
+# reports = AuditReports(audit)
+# suspicious = reports.report_suspicious() 
+# clients_data = reports.report_client_risk()
+# stats = reports.report_statistics()
 
-#  сохранение в файл
-audit.save()
+# #  сохранение в файл
+# audit.save()

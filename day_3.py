@@ -327,61 +327,58 @@ class Bank:
             client_balance.append ((client, total_balance))
         sorted_clients = sorted(client_balance, key=lambda x: x[1], reverse=True)
         
+        top_3 = sorted_clients[:3]
+
         print(f"\nРейтинг клиентов банка {self.name}")
         
-        for position, (client, balance) in enumerate(sorted_clients, 1):
+        for position, (client, balance) in enumerate (top_3, 1):
             print(f"{position}. {client.surname} {client.name} (ID: {client.client_id}) | Баланс: {balance:.2f}")
-    
-    
-        result = []
-        for client, balance in sorted_clients:
-            result.append(client.client_id)
-    
-        return result
+        
+        return top_3
                 
     
 
-client1= Client (
-    name= "Ivan",
-    surname= "Ivanovich",
-    lastname= "Ivanov",
-    contact_number="+709134",
-    birth_date= date(1998, 4, 15)
+# client1= Client (
+#     name= "Ivan",
+#     surname= "Ivanovich",
+#     lastname= "Ivanov",
+#     contact_number="+709134",
+#     birth_date= date(1998, 4, 15)
     
-)
+# )
 
-client2= Client (
-    name= "Petr",
-    surname= "Petrovich",
-    lastname= "Petrov",
-    contact_number="+709134",
-    birth_date=date(1998, 4, 15)
-)
-client3= Client (
-    name= "Petr",
-    surname= "Petrovich",
-    lastname= "Petrov",
-    contact_number="+709134",
-    birth_date=date(1998, 4, 15)
-)
-bank = Bank ("VTB") 
-bank.add_client (client1)
-bank.add_client (client2)
-account1 = bank.open_account(client1, currency="RUB", account_type="premium", opening_balance=1000)
-account2 = bank.open_account(client2, currency="USD", account_type="savings", opening_balance=100)
+# client2= Client (
+#     name= "Petr",
+#     surname= "Petrovich",
+#     lastname= "Petrov",
+#     contact_number="+709134",
+#     birth_date=date(1998, 4, 15)
+# )
+# client3= Client (
+#     name= "Petr",
+#     surname= "Petrovich",
+#     lastname= "Petrov",
+#     contact_number="+709134",
+#     birth_date=date(1998, 4, 15)
+# )
+# bank = Bank ("VTB") 
+# bank.add_client (client1)
+# bank.add_client (client2)
+# account1 = bank.open_account(client1, currency="RUB", account_type="premium", opening_balance=1000)
+# account2 = bank.open_account(client2, currency="USD", account_type="savings", opening_balance=100)
 
-print(f"\nСчёт: {account1.account_id[-4:]}")
-print(f"Баланс: {account1.account_balance} {account1.currency}")
-print(f"Владелец: {account1.surname} {account1.name}")
-print (client1.account)
+# print(f"\nСчёт: {account1.account_id[-4:]}")
+# print(f"Баланс: {account1.account_balance} {account1.currency}")
+# print(f"Владелец: {account1.surname} {account1.name}")
+# print (client1.account)
 
-print(f"\nСчёт: {account2.account_id[-4:]}")
-print(f"Баланс: {account2.account_balance} {account2.currency}")
-print(f"Владелец: {account2.surname} {account2.name}")
-print (client2.account)
+# print(f"\nСчёт: {account2.account_id[-4:]}")
+# print(f"Баланс: {account2.account_balance} {account2.currency}")
+# print(f"Владелец: {account2.surname} {account2.name}")
+# print (client2.account)
 
-# freeze = bank.freeze_account (client3,account1.account_id)
-unfreze = bank.unfreeze_account (client3,account1.account_id)
+# # freeze = bank.freeze_account (client3,account1.account_id)
+# unfreze = bank.unfreeze_account (client3,account1.account_id)
 
 # попытка входа 
 # auth= bank.authenticate_client (client1, "pass1")

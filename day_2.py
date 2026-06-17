@@ -127,8 +127,8 @@ class SavingsAccount (BankAccount):
         return (
             f"Номер счета: {self.account_id[-4:]}\n"
             f"Имя: {self.name}\n" 
-            F"Фамилия: {self.lastname}\n"
-            F"Отчество: {self.surname}\n"
+            F"Фамилия: {self.surname}\n"
+            F"Отчество: {self.lastname}\n"
             F"Статус счета: {self.status}\n" 
             F"Баланс: {self.account_balance}\n"
             f"Валюта счета: {self.currency}\n"
@@ -258,8 +258,8 @@ class PremiumAccount (BankAccount):
         return (
             f"Номер счета: {self.account_id[-4:]}\n"
             f"Имя: {self.name}\n" 
-            F"Фамилия: {self.lastname}\n"
-            F"Отчество: {self.surname}\n"
+            F"Фамилия: {self.surname}\n"
+            F"Отчество: {self.lastname}\n"
             F"Статус счета: {self.status}\n" 
             F"Баланс: {self.account_balance}\n"
             f"Валюта счета: {self.currency}\n"
@@ -436,8 +436,8 @@ class InvestmentAccount (BankAccount):
         return (
             f"Номер счета: {self.account_id[-4:]}\n"
             f"Имя: {self.name}\n" 
-            F"Фамилия: {self.lastname}\n"
-            F"Отчество: {self.surname}\n"
+            F"Фамилия: {self.surname}\n"
+            F"Отчество: {self.lastname}\n"
             F"Статус счета: {self.status}\n" 
             F"Баланс: {self.account_balance}\n"
             f"Валюта счета: {self.currency}\n"
