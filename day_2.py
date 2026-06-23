@@ -37,7 +37,7 @@ class SavingsAccount (BankAccount):
         
     #   операция зачисления средств
      
-        self.account_balance += amount
+        self._increase_balance(amount)
         print (f"Cчет пополнен на {amount}, сумма на счете {self.account_balance}\n")
 
 #   метод снятия наличных
@@ -74,7 +74,7 @@ class SavingsAccount (BankAccount):
 
     #   операция снятия
 
-        self.account_balance = self.account_balance - amount 
+        self._decrease_balance(amount)
         print (f"Снятие {amount}, баланс {self.account_balance}\n")
 
 #   метод начисления процетов 
@@ -87,9 +87,8 @@ class SavingsAccount (BankAccount):
             raise InvalidOperationError (f"Ошибка. Счет {self.status}")
         
     #   операция начисления процентов
-
         self.monthly_interest = self.account_balance * (self.INTEREST_RATE / 100) 
-        self.account_balance += self.monthly_interest           
+        self._increase_balance(self.monthly_interest)        
         print (f"Начислены проценты {self.monthly_interest}. Баланс {self.account_balance}\n")
 
     def get_account_info(self):
@@ -122,7 +121,8 @@ class SavingsAccount (BankAccount):
         print (f"Максимальный лимит: {account_info['max_limit']}")
         print (f"Минимальный лимит: {account_info['min_balance']}")
         print (f"Накопительная ставка: {account_info['interest_rate']}")
-
+        return account_info
+    
     def __str__(self):
         return (
             f"Номер счета: {self.account_id[-4:]}\n"
@@ -180,7 +180,7 @@ class PremiumAccount (BankAccount):
     
     #   операция зачисления средств
      
-        self.account_balance += amount
+        self._increase_balance(amount)
         print (f"Cчет пополнен на {amount}, сумма на счете {self.account_balance}\n")
          
     def withdraw (self,amount):
@@ -212,14 +212,14 @@ class PremiumAccount (BankAccount):
     #   операция снятия средств
 
         if amount <= self.account_balance:
-            self.account_balance = self.account_balance- amount
+            self._decrease_balance(amount)
             print (f"Снятие {amount}, баланс {self.account_balance}\n")
    
     #   условия снятия с комиссией и  возможностью овердрафта
 
         else:
             remainder = (amount + self.overdraft_comission) - self.account_balance 
-            self.account_balance = 0 
+            self._decrease_balance(self.account_balance)
             self.overdraft_used += remainder
             credit = self.OVERDRAFT_LIMIT - self.overdraft_used
             print (f"Снятие {amount}. Комиссия за снятие {self.overdraft_comission}. Текущий баланс {self.account_balance}. Использовано лимита {self.overdraft_used}.Остаток {credit}\n")
@@ -252,7 +252,7 @@ class PremiumAccount (BankAccount):
         print (f"Статус: {account_info['status']}")
         print (f"Максимальный лимит: {account_info['max_limit']}")
         print (f"Лимит овердрафта: {account_info['overdraft_limit']}")
-
+        return account_info
 
     def __str__(self):
         return (
@@ -312,7 +312,7 @@ class InvestmentAccount (BankAccount):
         
     #   операция зачисления средств
      
-        self.account_balance += amount
+        self._increase_balance(amount)
         print (f"Cчет пополнен на {amount}, сумма на счете {self.account_balance}")
 
 #   метод снятия наличных
@@ -344,7 +344,7 @@ class InvestmentAccount (BankAccount):
 
     #   операция снятия
 
-        self.account_balance = self.account_balance - amount 
+        self._decrease_balance(amount)
         print (f"Снятие {amount}, баланс {self.account_balance}")
 
 #   метод покупки актива
@@ -375,7 +375,7 @@ class InvestmentAccount (BankAccount):
         if price > self.account_balance:
             raise InvalidOperationError (f"Недостаточно средств. Баланс {self.account_balance}")
         
-        self.account_balance -= price 
+        self._decrease_balance(price)
         self.portfolio [position] = {"quantity" : quantity, "current_price": price} 
         
         print(f"Куплено {quantity} {position} на сумму {price}\n")
@@ -431,7 +431,8 @@ class InvestmentAccount (BankAccount):
         print (f"Статус: {account_info['status']}")
         print (f"Максимальный лимит: {account_info['max_limit']}")
         print (f"Доступные активы: {account_info['available_assets']}")
-
+        return account_info
+    
     def __str__(self):
         return (
             f"Номер счета: {self.account_id[-4:]}\n"
@@ -444,25 +445,27 @@ class InvestmentAccount (BankAccount):
             f"Доступные для покупки активы: {self.AVAILABLE_ASSETS}\n"\
             f"Приобретенные активы: {self.portfolio}"
                 )
-
-# создание инвестиционного счета
-# client_1 = PremiumAccount ("", "Ivan", 'Ivanovich', 'Ivanov', 5_000, "active", "")
-# print (client_1)
-# client_1.get_account_info ()
-# print (client_1)
-# info = client_1.get_account_info 
-# print (info)
-# print (client_1)
-# client_1.  ("NVD", 1)
-# client_1.buy_assets (70000)
-# print (client_1)
-# # покупка активов + прогноз доходности
-# client_1. buy_assets ("NVD", 1)
-# client_1. project_yearly_growth ()
-
-# # создание премиум счета
-# client_2 = PremiumAccount ("1", "Ivan", 'Ivanovich', 'Ivanov', 100000, "active")
-
-# # снятие в овердрафт и пополнение  
-# client_2. deposit (500)
-# client_2. withdraw (150_000)
+    
+if __name__ == "__main__":
+    
+    # создание инвестиционного счета
+    client_1 = InvestmentAccount ("", "Ivan", 'Ivanovich', 'Ivanov', 5_000, "active", "RUB")
+    # покупка активов + прогноз доходности
+    client_1.buy_assets ("NVD", 1)
+    client_1.project_yearly_growth ()
+    # сберегательный счет 
+    client_1 = SavingsAccount ("", "Ivan", 'Ivanovich', 'Ivanov', 10000, "active", "RUB")
+    # снятие с превышением минимального остатка
+    # client_1.withdraw (10000)
+    # начисление процетов
+    client_1.apply_monthly_interest ()
+    client_1.deposit (5000)
+    # создание премиум счета
+    client_1 = PremiumAccount ("", "Ivan", 'Ivanovich', 'Ivanov', 100000, "active", "RUB")
+    # снятие в овердрафт и пополнение  
+    client_1.deposit (500)
+    client_1.withdraw (150_000)
+    # создание обычного счета 
+    client_1 = BankAccount ("", "Ivan", 'Ivanovich', 'Ivanov', 100000, "active", "RUB")
+    client_1.deposit (5000)
+    client_1.withdraw (11000)

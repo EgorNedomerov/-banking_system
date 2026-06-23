@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from day_2 import PremiumAccount, SavingsAccount, InvestmentAccount
 from day_1 import BankAccount
-
+from day_5 import RiskAnalyzer
 class Transaction:
     def __init__(self, transaction_id, type, transaction_amount, currency, sender, recipient):
         self.transaction_id = transaction_id
@@ -170,7 +170,6 @@ class TransactionQueue:
             return next_transaction
         return None
     
-
 #   метод поиска транзакции
  
     def _find_transaction(self, transaction_id):
@@ -193,7 +192,6 @@ class TransactionQueue:
     
         return None
     
-
 #   метод отмены транзакции
  
     def cancel_transaction(self, transaction_id):
@@ -242,10 +240,9 @@ class TransactionQueue:
         print(f"Транзакция {transaction_id} не найдена")
         return False
 
-
 class TransactionProcessor:
      
-    def __init__(self):
+    def __init__(self, risk_analyzer = None):
         self.exchange_rates = {
             'RUB': 1.0,
             'USD': 90.0,
@@ -255,15 +252,14 @@ class TransactionProcessor:
         }
         self.max_retries = 3
         self.error_log = []
-        
+        self.risk_analyzer = risk_analyzer or RiskAnalyzer ()
         self.total_processed = 0
         self.total_success = 0
         self.total_failed = 0
         self.total_retried = 0
 
-
 #   метод обработки транзакций 
-#  
+
     def process_transaction(self, transaction):
         
         if transaction.status == "completed":
@@ -276,7 +272,18 @@ class TransactionProcessor:
 
         sender = transaction.sender
         recipient = transaction.recipient
+      
+    #   перенес сюда анализ риска, т.к в комментарии сказано, что риск-анализ не связан с Bank или общей обработкой транзакций
+      
+        risk_result = self.risk_analyzer.analyze (transaction, sender)
+        transaction.risk_analysis = risk_result    
         
+        if risk_result[2]: 
+            transaction.status = "blocked"
+            transaction.failure_reason = f"ЗАБЛОКИРОВАНО: {risk_result[1]}"
+
+            return False
+
         if sender.status == "frozen":
             error_msg = "Счет отправителя заморожен"
             self._log_error(transaction, error_msg)
@@ -329,13 +336,11 @@ class TransactionProcessor:
                 self._log_error(transaction, error_msg)
                 return False
             
-        sender.withdraw(total_cost)
-        if conversion_needed:
-            recipient.deposit(converted_amount)
-        else:
-            recipient.deposit(transaction.transaction_amount)
-        print(f"  Баланс получателя: {recipient.account_balance}")
+        recipient_amount = converted_amount if conversion_needed else transaction.transaction_amount
 
+        self._execute_balance_change(sender, recipient, total_cost, recipient_amount)
+
+        print(f"  Баланс получателя: {recipient.account_balance}")
 
         transaction.status = "completed"
         transaction.completed_at = datetime.now()
@@ -349,7 +354,7 @@ class TransactionProcessor:
     def process_with_retry(self, transaction):
         
         for attempt in range(1, self.max_retries + 1):
-            print(f"опытка {attempt} из {self.max_retries}")
+            print(f"Попытка {attempt} из {self.max_retries}")
             
             result = self.process_transaction(transaction)
             
@@ -360,10 +365,10 @@ class TransactionProcessor:
                 print(f"Будет выполнена повторная попытка...")
                 self.total_retried += 1
         
-            print(f"Транзакция не удалась после {self.max_retries} попыток")
-            self.total_failed += 1
-            return False
-# 
+        print(f"Транзакция не удалась после {self.max_retries} попыток")
+        self.total_failed += 1
+        return False
+    
 #   метод конвертации валют 
  
     def _convert_currency(self, amount, from_currency, to_currency):
@@ -383,6 +388,13 @@ class TransactionProcessor:
         converted = amount_in_rub / self.exchange_rates [to_currency]
         
         return converted
+    
+#   метод изменения баланса в транзакции
+
+    def _execute_balance_change (self, sender, recipient, sender_amount, recipient_amount):
+        sender.withdraw(sender_amount)
+        recipient.deposit(recipient_amount)
+
 #   метод логирования ошибок 
 
     def _log_error(self, transaction, error_message):
@@ -402,62 +414,63 @@ class TransactionProcessor:
         }
         self.error_log.append(error_record)
          
+if __name__ == "__main__":
 
-# premium_sender_acc = PremiumAccount (None, "Ivan", "Ivanovich", "Ivanov", 50000, "active", "RUB")
-# def_recipient_acc = BankAccount(None, "Petr", "Petrovich", "Petrov", 100000, "active", "RUB")
-# recipient_acc = BankAccount (None, "Andrey", "Andreev", "Andreevich", 3000, "active", "RUB")
-# transactions = [
-#     Transaction("TX001", "internal", 5000, "RUB", premium_sender_acc, recipient_acc),
-#     Transaction("TX002", "internal", 10000, "RUB", premium_sender_acc, def_recipient_acc),
-#     Transaction("TX003", "internal", 3000, "RUB", premium_sender_acc, recipient_acc),
-    
-    
-#     Transaction("TX004", "external", 15000, "RUB", premium_sender_acc, def_recipient_acc),
-#     Transaction("TX005", "external", 7000, "RUB", premium_sender_acc, recipient_acc),
-    
+    premium_sender_acc = PremiumAccount (None, "Ivan", "Ivanovich", "Ivanov", 50000, "active", "RUB")
+    def_recipient_acc = BankAccount(None, "Petr", "Petrovich", "Petrov", 100000, "active", "RUB")
+    recipient_acc = BankAccount (None, "Andrey", "Andreev", "Andreevich", 3000, "active", "RUB")
+    transactions = [
+        Transaction("TX001", "internal", 500000, "RUB", premium_sender_acc, recipient_acc),
+        Transaction("TX002", "internal", 10, "RUB", premium_sender_acc, def_recipient_acc),
+        Transaction("TX003", "internal", 30, "RUB", premium_sender_acc, recipient_acc),
+        
+        
+        Transaction("TX004", "external", 1500, "RUB", premium_sender_acc, def_recipient_acc),
+        Transaction("TX005", "external", 7000, "RUB", premium_sender_acc, recipient_acc),
+        
 
-#     Transaction("TX006", "internal", 15000, "RUB", premium_sender_acc, def_recipient_acc),
-    
+        Transaction("TX006", "internal", 15000, "RUB", premium_sender_acc, def_recipient_acc),
+        
 
-#     Transaction("TX007", "external", 50000, "RUB", premium_sender_acc, recipient_acc),
-    
+        Transaction("TX007", "external", 50000, "RUB", premium_sender_acc, recipient_acc),
+        
 
-#     Transaction("TX008", "internal", 8000, "RUB", premium_sender_acc, def_recipient_acc),
-#     Transaction("TX009", "internal", 4000, "RUB", premium_sender_acc, recipient_acc),
+        Transaction("TX008", "internal", 8000, "RUB", premium_sender_acc, def_recipient_acc),
+        Transaction("TX009", "internal", 4000, "RUB", premium_sender_acc, recipient_acc),
+        
     
- 
-#     Transaction("TX010", "external", 300000, "RUB", premium_sender_acc, def_recipient_acc),
-# ]
+        Transaction("TX010", "external", 3000000, "RUB", premium_sender_acc, def_recipient_acc),
+    ]
 
-# queue = TransactionQueue()
+    queue = TransactionQueue()
 
-# queue.add_transaction(transactions[0], "high")
-# queue.add_transaction(transactions[1], "high")
-# queue.add_transaction(transactions[2], "medium")
-# queue.add_transaction(transactions[3], "high")
-# queue.add_transaction(transactions[4], "medium")
-# queue.add_transaction(transactions[5], "medium")
-# queue.add_transaction(transactions[6], "high")
-# queue.add_transaction(transactions[7], "low")
-# queue.add_transaction(transactions[8], "low")
-# queue.add_transaction(transactions[9], "high")
+    queue.add_transaction(transactions[0], "high")
+    queue.add_transaction(transactions[1], "high")
+    queue.add_transaction(transactions[2], "medium")
+    queue.add_transaction(transactions[3], "high")
+    queue.add_transaction(transactions[4], "medium")
+    queue.add_transaction(transactions[5], "medium")
+    queue.add_transaction(transactions[6], "high")
+    queue.add_transaction(transactions[7], "low")
+    queue.add_transaction(transactions[8], "low")
+    queue.add_transaction(transactions[9], "high")
 
-# processor = TransactionProcessor()
-# tx = queue.get_next()
-# while tx is not None:
-#     print(f"\nОбработка: {tx.transaction_id}")
-#     print(f"  Сумма: {tx.transaction_amount} {tx.currency}")
-#     print(f"  Тип: {tx.type}")
-#     print(f"  От: {tx.sender.name} {tx.sender.surname}")
-#     print(f"  Кому: {tx.recipient.name} {tx.recipient.surname}")
-    
-#     result = processor.process_transaction(tx)
-    
-#     if result:
-#         print(f"  Результат: УСПЕШНО")
-#     else:
-#         print(f"  Результат: ОШИБКА - {tx.failure_reason}")
-    
-#     tx = queue.get_next()
+    processor = TransactionProcessor()
+    tx = queue.get_next()
+    while tx is not None:
+        print(f"\nОбработка: {tx.transaction_id}")
+        print(f"  Сумма: {tx.transaction_amount} {tx.currency}")
+        print(f"  Тип: {tx.type}")
+        print(f"  От: {tx.sender.name} {tx.sender.surname}")
+        print(f"  Кому: {tx.recipient.name} {tx.recipient.surname}")
+        
+        result = processor.process_transaction(tx)
+        
+        if result:
+            print(f"  Результат: УСПЕШНО")
+        else:
+            print(f"  Результат: ОШИБКА - {tx.failure_reason}")
+        
+        tx = queue.get_next()
 
 

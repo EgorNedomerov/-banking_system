@@ -59,7 +59,7 @@ class Bank:
     def add_client (self, client):
 
         now = datetime.now()
-        if 0 <= now.hour < 5:
+        if 3 <= now.hour < 5:
             raise ValueError (f"Операция запрещена. Добавление клиента невозможно с 00:00 до 05:00")
         
         for existing_client in self.client:
@@ -218,7 +218,7 @@ class Bank:
             print (f"Счет {account_id} закрыт")
             return False
         
-        Obj_account.status = "frozen"
+        Obj_account.status = "active"
         print (f"Счет {account_id} разморожен")
         return True
     
@@ -259,40 +259,49 @@ class Bank:
         
         results = []
 
-        for account_number, account_info in self.account.items():
+        for account in self.account:
             match = True
 
             for key, value in criteria.items():
                 if key == "client_id":
-                    if account_info["client_id"] != value:
+                    found = None 
+                    for client in self.client:
+                        if account.account_id in client.account:
+                            if client.client_id == value:
+                                found = True
+                            break
+                    if not found:
                         match = False
                         break
-
                 elif key == "status":
-                    if account_info["status"] != value:
+                    if account.status != value:
                         match = False
                         break
 
                 elif key == "account_type":
-                    if account_info.get("account_type") != value:
+                    if not hasattr (account, 'account_type') or account.account_type !=value:
                         match = False
                         break
             
                 elif key == "currency":
-                    if account_info.get("currency") != value:
+                    if account.currency != value:
                         match = False
                         break
             
             if match:
-                results.append(account_info)
+                results.append(account)
         
         if results:
             print(f"Найдено счетов: {len(results)}")
             for acc in results:
-                print(f"  - Счет {['account_number']} (статус: {['status']}, клиент: {['client_id']})")
+                client_id = "Неизвестно"
+                for client in self.client:
+                    if acc.account_id in client.account:
+                        client_id = client.client_id
+                        break
+                print(f"  - Счёт {acc.account_id} (статус: {acc.status}, клиент: {client_id})")
         else:
             print("Счета не найдены")
-    
         return results
 
     def get_total_balance (self):
@@ -337,54 +346,64 @@ class Bank:
         return top_3
                 
     
+if __name__ == "__main__":
 
-# client1= Client (
-#     name= "Ivan",
-#     surname= "Ivanovich",
-#     lastname= "Ivanov",
-#     contact_number="+709134",
-#     birth_date= date(1998, 4, 15)
+    client1= Client (
+    name= "Ivan",
+    surname= "Ivanovich",
+    lastname= "Ivanov",
+    contact_number="+709134",
+    birth_date= date(1998, 4, 15)
     
-# )
+    )
 
-# client2= Client (
-#     name= "Petr",
-#     surname= "Petrovich",
-#     lastname= "Petrov",
-#     contact_number="+709134",
-#     birth_date=date(1998, 4, 15)
-# )
-# client3= Client (
-#     name= "Petr",
-#     surname= "Petrovich",
-#     lastname= "Petrov",
-#     contact_number="+709134",
-#     birth_date=date(1998, 4, 15)
-# )
-# bank = Bank ("VTB") 
-# bank.add_client (client1)
-# bank.add_client (client2)
-# account1 = bank.open_account(client1, currency="RUB", account_type="premium", opening_balance=1000)
-# account2 = bank.open_account(client2, currency="USD", account_type="savings", opening_balance=100)
+    client2= Client (
+        name= "Petr",
+        surname= "Petrovich",
+        lastname= "Petrov",
+        contact_number="+709134",
+        birth_date=date(1998, 4, 15)
+    )
+    client3= Client (
+        name= "Semen",
+        surname= "Lobanov",
+        lastname= "Petrovich",
+        contact_number="+709134",
+        birth_date=date(1998, 4, 15)
+    )
+    bank = Bank ("VTB") 
+    bank.add_client (client1)
+    bank.add_client (client2)
+    bank.add_client (client3)
+    account1 = bank.open_account(client1, currency="RUB", account_type="premium", opening_balance=1000)
+    account2 = bank.open_account(client2, currency="USD", account_type="savings", opening_balance=100)
+    account3 = bank.open_account(client3, currency="USD", account_type="investment", opening_balance=100)
 
-# print(f"\nСчёт: {account1.account_id[-4:]}")
-# print(f"Баланс: {account1.account_balance} {account1.currency}")
-# print(f"Владелец: {account1.surname} {account1.name}")
-# print (client1.account)
+    print(f"\nСчёт: {account1.account_id[-4:]}")
+    print(f"Баланс: {account1.account_balance} {account1.currency}")
+    print(f"Владелец: {account1.surname} {account1.name}")
+    print (client1.account)
 
-# print(f"\nСчёт: {account2.account_id[-4:]}")
-# print(f"Баланс: {account2.account_balance} {account2.currency}")
-# print(f"Владелец: {account2.surname} {account2.name}")
-# print (client2.account)
+    print(f"\nСчёт: {account2.account_id[-4:]}")
+    print(f"Баланс: {account2.account_balance} {account2.currency}")
+    print(f"Владелец: {account2.surname} {account2.name}")
+    print (client2.account)
 
-# # freeze = bank.freeze_account (client3,account1.account_id)
-# unfreze = bank.unfreeze_account (client3,account1.account_id)
+    print(f"\nСчёт: {account3.account_id[-4:]}")
+    print(f"Баланс: {account3.account_balance} {account3.currency}")
+    print(f"Владелец: {account3.surname} {account3.name}")
+    print (client3.account)
 
-# попытка входа 
-# auth= bank.authenticate_client (client1, "pass1")
-# auth= bank.authenticate_client (client1, "pass") 
+#   заморозка/разморозка аккаунта
+#    
+    freeze = bank.freeze_account (client3,account3.account_id)
+    unfreze = bank.unfreeze_account (client3,account3.account_id)
 
-# rank = bank.get_clients_ranking()
-# total = bank.get_total_balance()
+    # попытка входа 
+    auth= bank.authenticate_client (client1, "pass1")
+    auth= bank.authenticate_client (client1, "pass") 
+    
+    rank = bank.get_clients_ranking()
+    total = bank.get_total_balance()
 
 

@@ -19,14 +19,35 @@ class AbstractAccount (ABC):
         self.name = name
         self.surname = surname
         self.lastname = lastname
-        self.account_balance = account_balance
-        
+        self._account_balance = account_balance
+        self.balance_history = []
+        self.balance_history.append (self.account_balance)
+
         allowed_status = ['active', 'frozen', 'closed']
         
         if status not in allowed_status:
             raise ValueError ("Некорректный статус")
         self.status = status
    
+#   чтение баланса
+
+    @property
+    def account_balance(self):
+        return self._account_balance
+    
+#   методы изменения баланса, изменить напрямую уже нельзя
+
+    def _increase_balance(self, amount):
+        self._account_balance += amount
+        self._account_balance = round(self._account_balance, 2)
+        self.balance_history.append(self._account_balance)
+
+    def _decrease_balance(self, amount):
+        self._account_balance -= amount
+        self._account_balance = round(self._account_balance, 2)
+        self.balance_history.append(self._account_balance)
+    
+
     @abstractmethod
     def deposit (self, amount):
         pass 
@@ -56,6 +77,7 @@ class BankAccount (AbstractAccount):
         
         self.allowedcurrency = ['RUB','USD','EUR','KZT','CNY']
         self.currency = currency
+        self.balance_history = [self.account_balance]
 
     #   валидация входящих данных  
 
@@ -100,7 +122,7 @@ class BankAccount (AbstractAccount):
    
     #   проверка корректности суммы
         
-        if amount <0:
+        if amount <=0: 
             raise InvalidOperationError ("Сумма не может быть отрицательной") 
         
      #   проверка максимального лимита   
@@ -110,7 +132,7 @@ class BankAccount (AbstractAccount):
         
     #   операция зачисления средств
      
-        self.account_balance += amount
+        self._increase_balance(amount)
         print (f"Cчет пополнен на {amount}, сумма на счете {self.account_balance}")
         
         
@@ -143,8 +165,10 @@ class BankAccount (AbstractAccount):
 
     #   операция снятия
 
-        self.account_balance = self.account_balance - amount 
+        self._decrease_balance(amount)
         print (f"Снятие {amount}, баланс {self.account_balance}")
+
+    
 
 #   генерация уникального id 
 
@@ -192,29 +216,31 @@ class BankAccount (AbstractAccount):
             f"Валюта счета: {self.currency}\n"
                 )
 
-# создание счета 
+if __name__ == "__main__":
+    
+    # создание счета 
 
-# client_1 = BankAccount ("", "Ivan", 'Ivanovich', 'Ivanov', 10000, "active", "RUB")
-# client_1.get_account_info()
+    client_1 = BankAccount ("", "Ivan", 'Ivanovich', 'Ivanov', 10000, "active", "RUB")
+    client_1.get_account_info()
 
-# создание замороженного счета
+    # создание замороженного счета
 
-# client_2. deposit (500)
+    client_2 = BankAccount ("", "Ivan", 'Ivanovich', 'Ivanov', 10000, "frozen", "RUB")
+    client_2.get_account_info()
 
-# валидация пополнения больше максимального лимита
-# client_1. deposit (1_000_000)
+    # снятие с замороженного счета
+    client_2. deposit (500)
 
-# валидация снятия больше текущей суммы
-# client_1.withdraw (10_000_000)
+    # валидация пополнения больше максимального лимита
+    client_1. deposit (1_000_000)
 
-# корректное попополнение счета 
-# client_1.deposit (1000)
+    # валидация снятия больше текущей суммы
+    client_1.withdraw (10_000_000)
 
-# корректное снятие со счета
-# client_1.withdraw (1000)
+    # корректное попополнение счета 
+    client_1.deposit (1000)
 
-# client_2.get_account_info ()
-# info = client_2.get_account_info()
-# print(info)
+    # корректное снятие со счета
+    client_1.withdraw (1000)
 
 

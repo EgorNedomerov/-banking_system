@@ -1,7 +1,5 @@
 import json
 from datetime import datetime
-from day_4 import TransactionProcessor, Transaction
-from day_2 import PremiumAccount, BankAccount, SavingsAccount, InvestmentAccount
 class AuditLog:
     
     log_entries = []
@@ -27,7 +25,6 @@ class AuditLog:
             importance = "LOW"
             importance_value = 1
 
-
         entry = [
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 
             transaction.transaction_id,                   
@@ -45,7 +42,7 @@ class AuditLog:
             []                                             
         ]
         
-        if risk_analysis:
+        if risk_analysis is not None:
             
             entry[11] = risk_analysis[0]   
             entry[12] = risk_analysis[1]  
@@ -92,7 +89,6 @@ class RiskAnalyzer:
 
         recent_ops = []
             
-        count_recent = 0
         for acc_id, op_time in self.account_operations:
             if acc_id == account_id and (now - op_time).total_seconds() < 3600:
                 recent_ops.append(op_time)
@@ -131,34 +127,11 @@ class RiskAnalyzer:
             should_block = False
 
         return [risk_score, risk_level, should_block, flags]
-    
-#   метод блокировки транзакции при превышении значения риска
-
-    def blocked_transaction(self, transaction, account, processor, audit_log):
-        
-        risk_result = self.analyze(transaction, account)
-        
-        if risk_result[2]:  
-            transaction.status = "failed"
-            transaction.failure_reason = f"Блокировка: {', '.join(risk_result[3])}"
-            audit_log.log(transaction, "blocked", risk_result)
-            print (f"Транзакция заблокирована {transaction.transaction_id}")
-            return False
-        
-        result = processor.process_transaction(transaction)
-
-        if result:
-            audit_log.log(transaction, "success", risk_result)
-        else:
-            audit_log.log(transaction, "failed", risk_result)
-        
-        return result
-
 
 class AuditReports:
     
     def __init__(self, audit_log):
-        self.log = audit_log.log_entries
+        self.audit_log = audit_log
 
 #   отчет по подозрительным операциям
 
@@ -166,7 +139,7 @@ class AuditReports:
         
         suspicious = []
         
-        for entry in self.log:
+        for entry in self.audit_log.log_entries:
             risk_level = entry[12]
 
             if risk_level in ['high', 'medium']:
@@ -203,7 +176,7 @@ class AuditReports:
         clients_blocked = []
         clients_failed = []
         
-        for entry in self.log:
+        for entry in self.audit_log.log_entries:
             sender = entry[5]
 
             if client_name is not None and client_name not in sender:
@@ -281,7 +254,7 @@ class AuditReports:
 #   статистика ошибок 
 
     def report_statistics (self):
-        total = len(self.log)
+        total = len(self.audit_log.log_entries)
         success = 0
         failed = 0
         blocked = 0
@@ -289,7 +262,7 @@ class AuditReports:
         error_reasons = []
         error_counts = []
 
-        for entry in self.log:
+        for entry in self.audit_log.log_entries:
             status = entry [7]
 
             if status == "success":
@@ -331,37 +304,6 @@ class AuditReports:
         if len(error_reasons) > 0:
             print("\n Причины ошибок:")
             for i in range(len(error_reasons)):
-                print(f"  {error_reasons[i]}: {error_counts[i]}")
+                print(f" {error_reasons[i]}: {error_counts[i]}")
 
         return [total, success, failed, blocked, success_rate, error_reasons, error_counts]
-
-# audit = AuditLog("my_audit.log")
-
-# risk_analyzer = RiskAnalyzer()
-# processor = TransactionProcessor()
-
-# sender1 = PremiumAccount (None, "Ivan", "Ivanovich", "Ivanov", 500000, "active", "RUB")
-# recipient_premium = PremiumAccount (None, "Petr", "Petrovich", "Petrov", 100000, "active", "RUB")
-
-# tx = Transaction ("TX000", "internal", 14, "RUB", sender1,recipient_premium )
-# tx1 = Transaction ("TX001", "internal", 30000, "RUB", sender1, recipient_premium)
-# tx2 = Transaction ("TX002", "external", 500000, "RUB", sender1, recipient_premium)
-# tx3 = Transaction ("TX003", "internal", 10, "RUB", sender1, recipient_premium)
-# tx4 = Transaction ("TX004", "internal", 10, "RUB", sender1, recipient_premium)
-# tx5 = Transaction ("TX005", "internal", 10, "RUB", sender1, recipient_premium)
-
-# result1 = risk_analyzer.blocked_transaction(tx,  sender1, processor, audit)
-# result2 = risk_analyzer.blocked_transaction(tx1, sender1, processor, audit)
-# result3 = risk_analyzer.blocked_transaction(tx2, sender1, processor, audit)
-# result4 = risk_analyzer.blocked_transaction(tx3, sender1, processor, audit)
-# result5 = risk_analyzer.blocked_transaction(tx4, sender1, processor, audit)
-# result6 = risk_analyzer.blocked_transaction(tx5, sender1, processor, audit)
-
-# # отчеты аудита
-# reports = AuditReports(audit)
-# suspicious = reports.report_suspicious() 
-# clients_data = reports.report_client_risk()
-# stats = reports.report_statistics()
-
-# #  сохранение в файл
-# audit.save()
