@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from day_2 import PremiumAccount, SavingsAccount, InvestmentAccount
 from day_1 import BankAccount
 from day_5 import RiskAnalyzer
+from exception import InvalidOperationError
 class Transaction:
     def __init__(self, transaction_id, type, transaction_amount, currency, sender, recipient):
         self.transaction_id = transaction_id
@@ -306,17 +307,25 @@ class TransactionProcessor:
         
         is_external = (transaction.type == "external")
         transaction.comission = transaction.CalculateComission(external=is_external)
-        
-        conversion_needed = (sender.currency != recipient.currency)
-        converted_amount = transaction.transaction_amount
-        
-        if conversion_needed:
-            converted_amount = self._convert_currency(
-                transaction.transaction_amount,
-                sender.currency,
-                recipient.currency
+
+#       переписал логику конвертации валюты транзакции
+ 
+        base_currency = transaction.currency
+        amount = transaction.transaction_amount
+
+        sender_amount = self._convert_currency(
+            amount,
+            base_currency,
+            sender.currency
             )
-        total_cost = transaction.transaction_amount + transaction.comission
+
+        recipient_amount = self._convert_currency(
+                amount,
+                base_currency,
+                recipient.currency
+                )
+
+        total_cost = sender_amount + transaction.comission
 
         if isinstance(sender, SavingsAccount):
             if sender.account_balance - total_cost < sender.MIN_BALANCE:
@@ -330,15 +339,20 @@ class TransactionProcessor:
                 error_msg = f"Недостаточно средств. Доступно: {available}, нужно: {total_cost}"
                 self._log_error(transaction, error_msg)
                 return False
+        
         else:
             if total_cost > sender.account_balance:
                 error_msg = f"Недостаточно средств. Баланс: {sender.account_balance}, нужно: {total_cost}"
                 self._log_error(transaction, error_msg)
                 return False
             
-        recipient_amount = converted_amount if conversion_needed else transaction.transaction_amount
+    #   добавил проверку превышения максимального лимита 
+             
+        if recipient.account_balance + recipient_amount > recipient.MAX_LIMIT:
+            self._log_error(transaction, "Превышен лимит получателя")
+            return False
 
-        self._execute_balance_change(sender, recipient, total_cost, recipient_amount)
+        self._execute_balance_change(sender, recipient, sender_amount, recipient_amount)
 
         print(f"  Баланс получателя: {recipient.account_balance}")
 
@@ -416,11 +430,11 @@ class TransactionProcessor:
          
 if __name__ == "__main__":
 
-    premium_sender_acc = PremiumAccount (None, "Ivan", "Ivanovich", "Ivanov", 50000, "active", "RUB")
-    def_recipient_acc = BankAccount(None, "Petr", "Petrovich", "Petrov", 100000, "active", "RUB")
+    premium_sender_acc = PremiumAccount (None, "Ivan", "Ivanovich", "Ivanov", 4_500_000, "active", "RUB")
+    def_recipient_acc = PremiumAccount (None, "Petr", "Petrovich", "Petrov", 4_000_000, "active", "RUB")
     recipient_acc = BankAccount (None, "Andrey", "Andreev", "Andreevich", 3000, "active", "RUB")
     transactions = [
-        Transaction("TX001", "internal", 500000, "RUB", premium_sender_acc, recipient_acc),
+        Transaction("TX001", "internal", 3_000_000, "RUB", premium_sender_acc, recipient_acc),
         Transaction("TX002", "internal", 10, "RUB", premium_sender_acc, def_recipient_acc),
         Transaction("TX003", "internal", 30, "RUB", premium_sender_acc, recipient_acc),
         
@@ -432,10 +446,10 @@ if __name__ == "__main__":
         Transaction("TX006", "internal", 15000, "RUB", premium_sender_acc, def_recipient_acc),
         
 
-        Transaction("TX007", "external", 50000, "RUB", premium_sender_acc, recipient_acc),
+        Transaction("TX007", "external", 1_000_000, "RUB", def_recipient_acc, premium_sender_acc),
         
 
-        Transaction("TX008", "internal", 8000, "RUB", premium_sender_acc, def_recipient_acc),
+        Transaction("TX008", "internal", 1_000_000, "RUB", def_recipient_acc, premium_sender_acc),
         Transaction("TX009", "internal", 4000, "RUB", premium_sender_acc, recipient_acc),
         
     

@@ -59,8 +59,8 @@ class Bank:
     def add_client (self, client):
 
         now = datetime.now()
-        if 3 <= now.hour < 5:
-            raise ValueError (f"Операция запрещена. Добавление клиента невозможно с 00:00 до 05:00")
+        if 0 <= now.hour < 5:
+            raise ValueError (f"Операция запрещена. Добавить клиента невозможно с 00:00 до 05:00")
         
         for existing_client in self.client:
             if existing_client.client_id == client.client_id:
@@ -75,6 +75,10 @@ class Bank:
 
     def open_account (self, client, currency, account_type = "standart", opening_balance = 0):
 
+        now = datetime.now()
+        if 0 <= now.hour < 5:
+            raise ValueError (f"Операция запрещена. Открыть счет невозможно с 00:00 до 05:00")
+        
         if client not in self.client:
             print (f"Клиента {client.name} {client.surname} не зарегистрирован в банке")
             return None
@@ -130,7 +134,7 @@ class Bank:
     def close_account (self, client, account_id):
         
         now = datetime.now()
-        if 4 <= now.hour < 5:
+        if 0 <= now.hour < 5:
             raise ValueError (f"Операция запрещена. Закрыть счет невозможно с 00:00 до 05:00")
         
         if client not in self.client:
@@ -161,6 +165,10 @@ class Bank:
 #   метод заморозки акканута
   
     def freeze_account (self, client, account_id):
+        
+        now = datetime.now()
+        if 0 <= now.hour < 5:
+            raise ValueError (f"Операция запрещена. Заморозить счет невозможно с 00:00 до 05:00")
         
         if client not in self.client:
             print (f"Клиент {client.name} {client.surname} не зарегистрирован в банке")
@@ -194,7 +202,7 @@ class Bank:
         
         now = datetime.now()
         if 0 <= now.hour < 5:
-            raise ValueError (f"Операция запрещена. Разблокировать Счет невозможно с 00:00 до 05:00")
+            raise ValueError (f"Операция запрещена. Разморозить Счет невозможно с 00:00 до 05:00")
 
         if client not in self.client:
             print (f"Клиент {client} не найден")
@@ -223,6 +231,10 @@ class Bank:
         return True
     
     def authenticate_client (self, client, password):
+        
+        now = datetime.now()
+        if 0 <= now.hour < 5:
+            raise ValueError (f"Операция запрещена. Аутентификация клиента невозможна с 00:00 до 05:00")
         
         if client not in self.client:
             print(f"Клиент с ID {client.client_id} не найден")
