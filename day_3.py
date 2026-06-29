@@ -125,6 +125,11 @@ class Bank:
             status = "active",
             currency= currency
         )
+    
+    #   добавление атрибута тип акккаунта объекту new_account 
+     
+        new_account.account_type = account_type
+
         self.account.append(new_account)
         client.account.append (new_account.account_id)
         return new_account

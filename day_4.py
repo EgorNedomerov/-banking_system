@@ -318,14 +318,24 @@ class TransactionProcessor:
             base_currency,
             sender.currency
             )
+        
+#       конвертация комиссии в валюту отправителя 
+
+        sender_comission = self._convert_currency(
+            transaction.comission,
+            base_currency,
+            sender.currency
+            )
 
         recipient_amount = self._convert_currency(
-                amount,
-                base_currency,
-                recipient.currency
-                )
+            amount,
+            base_currency,
+            recipient.currency
+            )
+        
+#       изменил на комиссию отправителя 
 
-        total_cost = sender_amount + transaction.comission
+        total_cost = sender_amount + sender_comission
 
         if isinstance(sender, SavingsAccount):
             if sender.account_balance - total_cost < sender.MIN_BALANCE:
@@ -333,7 +343,7 @@ class TransactionProcessor:
                 self._log_error(transaction, error_msg)
                 return False
         
-        if isinstance(sender, PremiumAccount):
+        elif isinstance(sender, PremiumAccount):
             available = sender.account_balance + sender.OVERDRAFT_LIMIT
             if total_cost > available:
                 error_msg = f"Недостаточно средств. Доступно: {available}, нужно: {total_cost}"
@@ -352,7 +362,7 @@ class TransactionProcessor:
             self._log_error(transaction, "Превышен лимит получателя")
             return False
 
-        self._execute_balance_change(sender, recipient, sender_amount, recipient_amount)
+        self._execute_balance_change(sender, recipient, total_cost, recipient_amount)
 
         print(f"  Баланс получателя: {recipient.account_balance}")
 
