@@ -344,12 +344,9 @@ class Bank:
             total_balance = 0.0
             
             for account in self.account:
-                if (account.surname == client.surname and 
-                    account.name == client.name and 
-                    account.lastname == client.lastname and
-                    account.status != "closed"):
+                if account.account_id in client.account and account.status != "closed":
                     total_balance += account.account_balance
-        
+
             client_balance.append ((client, total_balance))
         sorted_clients = sorted(client_balance, key=lambda x: x[1], reverse=True)
         

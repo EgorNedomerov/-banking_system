@@ -27,9 +27,12 @@ class SavingsAccount (BankAccount):
    
     #   проверка корректности суммы
         
-        if amount <0:
-            raise InvalidOperationError ("Сумма не может быть отрицательной") 
-        
+        if amount is None or amount == "":
+            raise InvalidOperationError("Необходимо указать сумму")
+
+        if amount <=0:
+            raise InvalidOperationError ("Сумма должна быть положительной")
+
      #   проверка максимального лимита   
         
         if amount + self.account_balance > self.MAX_LIMIT:
@@ -46,7 +49,7 @@ class SavingsAccount (BankAccount):
     
     #   проверка на указание суммы
 
-        if amount is None:
+        if amount is None or amount == "":
             raise InvalidOperationError ("Ошибка. Необходимо указать сумму")
    
     #   проверка на корректность введенной суммы
@@ -162,25 +165,33 @@ class PremiumAccount (BankAccount):
         
         if self.status == "closed":
             raise AccountClosedError (f"Пополнение невозможно, счет {self.status}")
-   
-    #   проверка корректности суммы
         
-        if amount <0:
-            raise InvalidOperationError ("Сумма не может быть отрицательной") 
-        
-     #   проверка максимального лимита   
-        
-        if amount + self.account_balance > self.MAX_LIMIT:
-            raise   InvalidOperationError (f"Ошибка. Сумма не может быть больше установленного лимита {self.MAX_LIMIT}")
-        
-    #   проверка корректности статуса счета
-
         if self.status != "active":
             raise InvalidOperationError (f"Ошибка. Некорректный статус счета {self.status}")
-    
-    #   операция зачисления средств
-     
-        self._increase_balance(amount)
+        
+    #   проверка корректности суммы
+        
+        if amount is None or amount == "":
+            raise InvalidOperationError("Необходимо указать сумму")
+
+        if amount <=0:
+            raise InvalidOperationError ("Сумма должна быть положительной") 
+        
+        if self.overdraft_used > 0:
+            repayment = min(amount, self.overdraft_used)
+
+            self.overdraft_used -= repayment
+            amount -= repayment
+
+            self._increase_balance(repayment)
+
+     #   проверка максимального лимита   
+        
+        if amount > 0:
+            if amount + self.account_balance > self.MAX_LIMIT:
+                raise InvalidOperationError(f"Ошибка. Сумма не может быть больше установленного лимита {self.MAX_LIMIT}")
+            
+            self._increase_balance(amount)
         print (f"Cчет пополнен на {amount}, сумма на счете {self.account_balance}\n")
          
     def withdraw (self,amount):
@@ -204,11 +215,16 @@ class PremiumAccount (BankAccount):
             raise AccountFrozenError (f"Ошибка, счет {self.status}")
    
     #   проверка превышения суммы (с учетом овердрафта)
-    
-        available = self.account_balance + self.OVERDRAFT_LIMIT
-        if amount > available :
-            raise InsufficientFundsError (f"Ошибка. Недостаточно средств, баланс {self.account_balance}\n")
-
+        if self.account_balance < 0:
+            available = self.OVERDRAFT_LIMIT - self.overdraft_used
+        else:
+            available = self.account_balance + self.OVERDRAFT_LIMIT - self.overdraft_used
+        if amount > self.account_balance:
+            if amount + self.overdraft_comission > available :
+                raise InsufficientFundsError (f"Ошибка. Недостаточно средств, баланс {available}, нужно {amount + self.overdraft_comission}\n")
+        else:
+            if amount > available:
+                raise InsufficientFundsError (f"Ошибка. Недостаточно средств, баланс {available}, нужно {amount}\n")
     #   операция снятия средств
 
         if amount <= self.account_balance:
@@ -218,8 +234,8 @@ class PremiumAccount (BankAccount):
     #   условия снятия с комиссией и  возможностью овердрафта
 
         else:
-            remainder = (amount + self.overdraft_comission) - self.account_balance 
-            self._decrease_balance(self.account_balance)
+            remainder = (amount + self.overdraft_comission) - max(self.account_balance, 0)
+            self._decrease_balance(amount + self.overdraft_comission)
             self.overdraft_used += remainder
             credit = self.OVERDRAFT_LIMIT - self.overdraft_used
             print (f"Снятие {amount}. Комиссия за снятие {self.overdraft_comission}. Текущий баланс {self.account_balance}. Использовано лимита {self.overdraft_used}.Остаток {credit}\n")
@@ -302,8 +318,11 @@ class InvestmentAccount (BankAccount):
    
     #   проверка корректности суммы
         
-        if amount <0:
-            raise InvalidOperationError ("Сумма не может быть отрицательной") 
+        if amount is None or amount == "":
+            raise InvalidOperationError("Необходимо указать сумму")
+
+        if amount <=0:
+            raise InvalidOperationError ("Сумма должна быть положительной")
         
      #   проверка максимального лимита   
         

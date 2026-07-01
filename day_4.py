@@ -344,12 +344,15 @@ class TransactionProcessor:
                 return False
         
         elif isinstance(sender, PremiumAccount):
-            available = sender.account_balance + sender.OVERDRAFT_LIMIT
-            if total_cost > available:
-                error_msg = f"Недостаточно средств. Доступно: {available}, нужно: {total_cost}"
-                self._log_error(transaction, error_msg)
-                return False
-        
+            if sender.account_balance < 0:
+                available = sender.OVERDRAFT_LIMIT - sender.overdraft_used
+            else:
+                available = sender.account_balance + sender.OVERDRAFT_LIMIT - sender.overdraft_used
+            if total_cost > sender.account_balance:
+                if total_cost + sender.overdraft_comission > available:
+                    error_msg = f"Недостаточно средств. Доступно: {available}, нужно: {total_cost + sender.overdraft_comission}"
+                    self._log_error(transaction, error_msg)
+                    return False
         else:
             if total_cost > sender.account_balance:
                 error_msg = f"Недостаточно средств. Баланс: {sender.account_balance}, нужно: {total_cost}"

@@ -72,10 +72,9 @@ class RiskAnalyzer:
 
     def __init__(self):
         
-        self. account_operations = []
-        self.known_accounts = set ()
+        self.account_operations = []
+        self.known_accounts = {}
     
-
     def analyze (self, transaction, account):
         flags = []
         risk_score = 0.0
@@ -100,12 +99,13 @@ class RiskAnalyzer:
         self.account_operations.append((account_id, now))
 
         recipient_id = transaction.recipient.account_id
-        
-        if recipient_id not in self.known_accounts:
+        if account_id not in self.known_accounts:
+            self.known_accounts[account_id] = set ()
+        if recipient_id not in self.known_accounts[account_id]:
             risk_score += 0.3
             flags.append("new_account")
 
-        self.known_accounts.add(recipient_id)
+        self.known_accounts[account_id].add(recipient_id)
 
         hour = now.hour
         if hour >= 23 or hour < 6:
